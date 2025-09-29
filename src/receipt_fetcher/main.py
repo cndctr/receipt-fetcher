@@ -13,7 +13,8 @@ def main():
     pdf_file = "receipt.pdf"
 
     print(f"[+] Fetching receipt for GUID: {guid}")
-    fetcher.download_receipt_pdf(guid, pdf_file)
+    # PASS THE FULL LINK (not the guid) so fetcher can determine host
+    fetcher.download_receipt_pdf(link, pdf_file)
     print(f"[+] PDF saved as {pdf_file}")
 
     receipt = parser.parse_receipt(pdf_file)
