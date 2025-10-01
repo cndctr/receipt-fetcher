@@ -1,0 +1,15 @@
+# Python-generated files
+src/receipt-fetcher/__pycache__/
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+
+*.xlsx
+*.pdf
