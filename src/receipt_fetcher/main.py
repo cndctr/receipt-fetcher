@@ -7,9 +7,10 @@ def main():
         sys.exit(1)
 
     link = sys.argv[1]
-    output = sys.argv[2] if len(sys.argv) > 2 else "receipt.xlsx"
 
     guid = link.split("/")[-1]
+
+    output = sys.argv[2] if len(sys.argv) > 2 else f"{guid}_receipt.xlsx"
     pdf_file = "receipt.pdf"
 
     print(f"[+] Fetching receipt for GUID: {guid}")
@@ -19,6 +20,8 @@ def main():
 
     receipt = parser.parse_receipt(pdf_file)
     print(f"[+] Parsed {len(receipt['items'])} items")
+    print(f"[=]     Total:  {receipt['total']}" )
+    print(f"[=] Total alc:  {receipt['total_alc']}" )
 
     exporter.export_to_excel(receipt, output)
     print(f"[+] Receipt saved to {output}")

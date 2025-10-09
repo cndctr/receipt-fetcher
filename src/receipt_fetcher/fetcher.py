@@ -84,8 +84,10 @@ def download_receipt_pdf(link_or_guid: str, output_file: str):
             r = requests.post(url, json=payload, timeout=30)
 
         r.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"Network error while fetching receipt: {e}") from e
+    # except requests.exceptions.RequestException as e:
+        # raise RuntimeError(f"Network error while fetching receipt: {e}") from e
+    except: 
+        raise
 
     with open(output_file, "wb") as f:
         f.write(r.content)
