@@ -44,7 +44,7 @@ class UnsafeAdapter(HTTPAdapter):
         return super().proxy_manager_for(proxy, **proxy_kwargs)
 
 
-def download_receipt_pdf(link_or_guid: str, output_file: str):
+def download_receipt(link_or_guid: str, output_file: str):
     """
     Accepts either a full URL (https://...) or a bare GUID.
     Chooses store config by hostname.
@@ -62,32 +62,34 @@ def download_receipt_pdf(link_or_guid: str, output_file: str):
     if not cfg:
         raise ValueError(f"Unsupported host: {host}")
 
-    payload = {
-        "CRC": "",
-        "Packet": {
-            "JWT": "",
-            "MethodName": "DiscountClub.GetVirtualReceipt",
-            "ServiceNumber": cfg["service"],
-            "Data": {"CreditGroupGUID": guid},
-        },
-    }
-
-    url = cfg["url"]
+    receipt_type = cfg.get("type", "pdf")
 
     try:
+        session = requests.Session()
         if cfg.get("insecure", False):
             print(f"[!] {host} detected — using relaxed TLS adapter (insecure).")
-            session = requests.Session()
-            session.mount(url, UnsafeAdapter())
-            r = session.post(url, json=payload, timeout=30)
+            adapter = UnsafeAdapter()
+            session.mount("https://", adapter)
+
+        if receipt_type == "html":
+            r = session.get(link_or_guid, timeout=30)
         else:
-            r = requests.post(url, json=payload, timeout=30)
+            payload = {
+                "CRC": "",
+                "Packet": {
+                    "JWT": "",
+                    "MethodName": "DiscountClub.GetVirtualReceipt",
+                    "ServiceNumber": cfg["service"],
+                    "Data": {"CreditGroupGUID": guid},
+                },
+            }
+            url = cfg["url"]
+            r = session.post(url, json=payload, timeout=30)
 
         r.raise_for_status()
-    # except requests.exceptions.RequestException as e:
-        # raise RuntimeError(f"Network error while fetching receipt: {e}") from e
-    except: 
-        raise
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Network error while fetching receipt: {e}") from e
 
-    with open(output_file, "wb") as f:
-        f.write(r.content)
+    Path(output_file).write_bytes(r.content)
+
+    return receipt_type

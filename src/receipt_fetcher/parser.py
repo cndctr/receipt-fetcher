@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 import pdfplumber
 import re
 
@@ -53,6 +54,68 @@ def parse_receipt(pdf_file: str):
 
                 i += 3
                 continue
+
+        i += 1
+
+    return {"items": items, "total": total, "total_alc": total_alc}
+
+
+def parse_html_receipt(html_file: str):
+    items = []
+    total = None
+    total_alc = 0.0
+
+    with open(html_file, "r", encoding="utf-8") as f:
+        soup = BeautifulSoup(f, "html.parser")
+
+    rows = soup.find_all("tr")
+    i = 0
+    while i < len(rows):
+        row = rows[i]
+        cells = row.find_all("td")
+
+        # Item name is in a row with one cell spanning 4 columns
+        if len(cells) == 1 and cells[0].get("colspan") == "4":
+            name = cells[0].text.strip()
+            
+            # The next row contains price, quantity, and subtotal
+            if i + 1 < len(rows):
+                next_row_cells = rows[i+1].find_all("td")
+                if len(next_row_cells) == 4:
+                    try:
+                        price_text = next_row_cells[1].text.strip()
+                        qty_text = next_row_cells[2].text.strip().replace("x", "")
+                        subtotal_text = next_row_cells[3].text.strip()
+
+                        price = float(price_text.replace(",", "."))
+                        qty = float(qty_text.replace(",", "."))
+                        subtotal = float(subtotal_text.replace(",", "."))
+
+                        item = {
+                            "Article": "",  # HTML receipts may not have an article number
+                            "Name": name,
+                            "Price": price,
+                            "Quantity": qty,
+                            "Subtotal": subtotal,
+                        }
+                        items.append(item)
+
+                        lower_name = name.lower()
+                        if any(key in lower_name for key in ALCO_KEYWORDS):
+                            total_alc += item["Subtotal"]
+                        
+                        i += 1 # Skip the next row since we've processed it
+                    except (ValueError, IndexError):
+                        pass # Ignore rows that don't parse correctly
+
+        # Total is in a row with "ИТОГО К ОПЛАТЕ"
+        if "ИТОГО К ОПЛАТE" in row.text:
+             total_cells = row.find_all("td")
+             if len(total_cells) >= 2:
+                 try:
+                     total = float(total_cells[-1].text.strip().replace(",", "."))
+                 except (ValueError, IndexError):
+                     pass
 
         i += 1
 

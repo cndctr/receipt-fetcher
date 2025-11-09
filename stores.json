@@ -2,11 +2,17 @@
   "r.eplus.by": {
     "url": "https://rest.eurotorg.by/10101/Json",
     "service": "04FA4558-EF8A-4783-A112-036204888532",
-    "insecure": false
+    "insecure": false,
+    "type": "pdf"
   },
   "idcheck.dobronom.by": {
     "url": "https://api.dobronom.by:10802/Json",
     "service": "32BFD693-DFEE-4147-BF37-E37C45DA52FA",
-    "insecure": true
+    "insecure": true,
+    "type": "pdf"
+  },
+  "mch.ecrs.by": {
+    "insecure": true,
+    "type": "html"
   }
 }
