@@ -15,4 +15,5 @@ wheels/
 *.pdf
 *.zip
 *.dat
-^.html
+*.html
+*.txt

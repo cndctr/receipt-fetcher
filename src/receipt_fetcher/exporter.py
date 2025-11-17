@@ -1,8 +1,10 @@
 import openpyxl
 
+
 def export_to_excel(receipt: dict, output_file: str):
     wb = openpyxl.Workbook()
     ws = wb.active
+    assert ws is not None
     ws.title = "Receipt"
 
     headers = ["Article", "Name", "Price", "Quantity", "Subtotal"]
@@ -10,12 +12,12 @@ def export_to_excel(receipt: dict, output_file: str):
 
     for row in receipt["items"]:
         ws.append([
-            row["Article"],
-            row["Name"],
-            row["Price"],
-            row["Quantity"],
-            row["Subtotal"],
-        ])
+                row["Article"],
+                row["Name"],
+                row["Price"],
+                row["Quantity"],
+                row["Subtotal"],
+            ])
 
     # Totals
     if receipt.get("total") is not None:
