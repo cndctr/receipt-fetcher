@@ -41,8 +41,9 @@ def process_receipt(link: str, output_file: Path | None = None):
             exporter.export_to_excel(receipt, output_file)
             print(f"[+] Receipt saved to {output_file}")
         else:
-            # For console output, just print the receipt dictionary for now
-            print(receipt)
+            # Debug output of dictionary
+            # print(receipt)
+            pass
 
 def main():
     parser = argparse.ArgumentParser(description="Fetch, parse, and export e-receipts.")

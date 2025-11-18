@@ -3,6 +3,7 @@ import pdfplumber
 import re
 
 price_re = re.compile(r'(?P<price>\d+[\.,]\d+)\s*[xх]\s*(?P<qty>\d+[\.,]?\d*)\s+(?P<subtotal>\d+[\.,]\d+)')
+article_re = re.compile(r'\b(\d{13})\b')
 
 ALCO_KEYWORDS = ["пиво", "водка", "вино", "слабоалко"]
 
@@ -65,8 +66,8 @@ def parse_html_receipt(html_file: str):
     total = None
     total_alc = 0.0
 
-    with open(html_file, "r", encoding="utf-8") as f:
-        soup = BeautifulSoup(f, "html.parser")
+    with open(html_file, "rb") as f:
+        soup = BeautifulSoup(f.read().decode("utf-8"), "html.parser")
 
     rows = soup.find_all("tr")
     i = 0
@@ -77,6 +78,8 @@ def parse_html_receipt(html_file: str):
         # Item name is in a row with one cell spanning 4 columns
         if len(cells) == 1 and cells[0].get("colspan") == "4":
             name = cells[0].text.strip()
+            article_match = article_re.search(name)
+            article = article_match.group(1) if article_match else ""
             
             # The next row contains price, quantity, and subtotal
             if i + 1 < len(rows):
@@ -92,7 +95,7 @@ def parse_html_receipt(html_file: str):
                         subtotal = float(subtotal_text.replace(",", "."))
 
                         item = {
-                            "Article": "",  # HTML receipts may not have an article number
+                            "Article": article,
                             "Name": name,
                             "Price": price,
                             "Quantity": qty,
@@ -108,8 +111,8 @@ def parse_html_receipt(html_file: str):
                     except (ValueError, IndexError):
                         pass # Ignore rows that don't parse correctly
 
-        # Total is in a row with "ИТОГО К ОПЛАТЕ"
-        if "ИТОГО К ОПЛАТE" in row.text:
+        # Total is in a row with "ИТОГО"
+        if "ИТОГО" in row.text:
              total_cells = row.find_all("td")
              if len(total_cells) >= 2:
                  try:

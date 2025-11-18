@@ -47,3 +47,4 @@ receipt-fetcher "https://e-check.by/check/1234567890ABCDEF"
 - **Modularity**: The application is divided into clear modules for fetching, parsing, and exporting, making it easy to extend or maintain.
 - **Dependencies**: Project dependencies are listed in `pyproject.toml` and managed with `uv`.
 - **Testing**: TODO: No testing framework is currently set up. Adding tests with a framework like `pytest` would be a valuable improvement.
+
